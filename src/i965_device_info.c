@@ -1077,6 +1077,7 @@ const static char *gen7_cpu_hook_list[] =  {
     "Intel(R)Celeron(R)CPU1037U",
     "Intel(R)Celeron(R)CPU1047UE",
     "Intel(R)Celeron(R)CPU927UE",
+    "Intel(R)Celeron(R)CPUN2807",
     "Intel(R)Celeron(R)CPUG1610",
     "Intel(R)Celeron(R)CPUG1610T",
     "Intel(R)Celeron(R)CPUG1620",
