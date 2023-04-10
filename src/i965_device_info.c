@@ -1080,6 +1080,7 @@ const static char *gen7_cpu_hook_list[] =  {
     "Intel(R)Celeron(R)CPUG1610",
     "Intel(R)Celeron(R)CPUG1610T",
     "Intel(R)Celeron(R)CPUG1620",
+    "Intel(R)Celeron(R)CPUN2807",
     "Intel(R)Pentium(R)CPU2020M",
     "Intel(R)Pentium(R)CPU2030M",
     "Intel(R)Pentium(R)CPU2117U",
