@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011 Intel Corporation
+ * Copyright Â© 2011 Intel Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -531,8 +531,6 @@ gen7_mfd_avc_slice_state(VADriverContextP ctx,
                          pic_param->seq_fields.bits.mb_adaptive_frame_field_flag);
     int first_mb_in_slice = 0, first_mb_in_next_slice = 0;
     int slice_type;
-    int num_surfaces = 0;
-    int i;
 
     if (slice_param->slice_type == SLICE_TYPE_I ||
         slice_param->slice_type == SLICE_TYPE_SI) {
@@ -2508,7 +2506,7 @@ gen7_mfd_jpeg_qm_state(VADriverContextP ctx,
     assert(pic_param->num_components <= 3);
 
     for (index = 0; index < pic_param->num_components; index++) {
-        int id = pic_param->components[index].component_id - pic_param->components[0].component_id + 1;
+        unsigned char id = pic_param->components[index].component_id - pic_param->components[0].component_id + 1;
         int qm_type;
         unsigned char *qm = iq_matrix->quantiser_table[pic_param->components[index].quantiser_table_selector];
         unsigned char raster_qm[64];
@@ -2539,6 +2537,7 @@ gen7_mfd_jpeg_bsd_object(VADriverContextP ctx,
 {
     struct intel_batchbuffer *batch = gen7_mfd_context->base.batch;
     int scan_component_mask = 0;
+    unsigned char id;
     int i;
 
     assert(slice_param->num_components > 0);
@@ -2546,7 +2545,8 @@ gen7_mfd_jpeg_bsd_object(VADriverContextP ctx,
     assert(slice_param->num_components <= pic_param->num_components);
 
     for (i = 0; i < slice_param->num_components; i++) {
-        switch (slice_param->components[i].component_selector - pic_param->components[0].component_id + 1) {
+        id = slice_param->components[i].component_selector - pic_param->components[0].component_id + 1;
+        switch (id) {
         case 1:
             scan_component_mask |= (1 << 0);
             break;
