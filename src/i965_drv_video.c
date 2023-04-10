@@ -885,6 +885,10 @@ i965_validate_config(VADriverContextP ctx, VAProfile profile,
                     profile == VAProfileVP9Profile0 &&
                     entrypoint == VAEntrypointEncSliceLP)) {
             va_status = VA_STATUS_SUCCESS;
+        } else if (profile == VAProfileVP9Profile0 &&
+                   entrypoint == VAEntrypointVLD &&
+                   i965->wrapper_pdrvctx) {
+            va_status = VA_STATUS_SUCCESS;
         } else if (!HAS_VP9_DECODING_PROFILE(i965, profile) &&
                    !HAS_VP9_ENCODING(i965) &&
                    !HAS_LP_VP9_ENCODING(i965) &&
@@ -892,27 +896,6 @@ i965_validate_config(VADriverContextP ctx, VAProfile profile,
             va_status = VA_STATUS_ERROR_UNSUPPORTED_PROFILE;
         } else {
             va_status = VA_STATUS_ERROR_UNSUPPORTED_ENTRYPOINT;
-        }
-
-        if (i965->wrapper_pdrvctx && va_status != VA_STATUS_SUCCESS) {
-            VAEntrypoint wrapper_entrypoints[5] = {0};
-            int32_t wrapper_num_entrypoints = 0;
-            VADriverContextP pdrvctx = i965->wrapper_pdrvctx;
-
-            CALL_VTABLE(pdrvctx, va_status,
-                        vaQueryConfigEntrypoints(pdrvctx,
-                                                 profile,
-                                                 wrapper_entrypoints,
-                                                 &wrapper_num_entrypoints));
-
-            if (va_status == VA_STATUS_SUCCESS) {
-                va_status = VA_STATUS_ERROR_UNSUPPORTED_ENTRYPOINT;
-                for (int i = 0; i < wrapper_num_entrypoints; i++) {
-                    if (entrypoint == wrapper_entrypoints[i]) {
-                        va_status = VA_STATUS_SUCCESS;
-                    }
-                }
-            }
         }
 
         break;
@@ -1742,8 +1725,8 @@ i965_suface_external_memory(VADriverContextP ctx,
         obj_surface->subsampling = SUBSAMPLE_YUV420;
         obj_surface->y_cb_offset = obj_surface->height;
         obj_surface->y_cr_offset = obj_surface->height;
-        obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
-        obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+        obj_surface->cb_cr_width = obj_surface->orig_width / 2;
+        obj_surface->cb_cr_height = obj_surface->orig_height / 2;
         obj_surface->cb_cr_pitch = memory_attibute->pitches[1];
         if (tiling)
             ASSERT_RET(IS_ALIGNED(obj_surface->cb_cr_pitch, 128), VA_STATUS_ERROR_INVALID_PARAMETER);
@@ -1760,8 +1743,8 @@ i965_suface_external_memory(VADriverContextP ctx,
         obj_surface->subsampling = SUBSAMPLE_YUV420;
         obj_surface->y_cr_offset = obj_surface->height;
         obj_surface->y_cb_offset = memory_attibute->offsets[2] / obj_surface->width;
-        obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
-        obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+        obj_surface->cb_cr_width = obj_surface->orig_width / 2;
+        obj_surface->cb_cr_height = obj_surface->orig_height / 2;
         obj_surface->cb_cr_pitch = memory_attibute->pitches[1];
 
         if (tiling)
@@ -1781,8 +1764,8 @@ i965_suface_external_memory(VADriverContextP ctx,
         obj_surface->subsampling = SUBSAMPLE_YUV420;
         obj_surface->y_cb_offset = obj_surface->height;
         obj_surface->y_cr_offset = memory_attibute->offsets[2] / obj_surface->width;
-        obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
-        obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+        obj_surface->cb_cr_width = obj_surface->orig_width / 2;
+        obj_surface->cb_cr_height = obj_surface->orig_height / 2;
         obj_surface->cb_cr_pitch = memory_attibute->pitches[1];
         if (tiling)
             ASSERT_RET(IS_ALIGNED(obj_surface->cb_cr_pitch, 128), VA_STATUS_ERROR_INVALID_PARAMETER);
@@ -1854,7 +1837,7 @@ i965_suface_external_memory(VADriverContextP ctx,
         obj_surface->subsampling = SUBSAMPLE_YUV422H;
         obj_surface->y_cb_offset = obj_surface->height;
         obj_surface->y_cr_offset = memory_attibute->offsets[2] / obj_surface->width;
-        obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
+        obj_surface->cb_cr_width = obj_surface->orig_width / 2;
         obj_surface->cb_cr_height = obj_surface->orig_height;
         obj_surface->cb_cr_pitch = memory_attibute->pitches[1];
         if (tiling)
@@ -1871,7 +1854,7 @@ i965_suface_external_memory(VADriverContextP ctx,
         obj_surface->subsampling = SUBSAMPLE_YUV422H;
         obj_surface->y_cr_offset = memory_attibute->offsets[1] / obj_surface->width;
         obj_surface->y_cb_offset = memory_attibute->offsets[2] / obj_surface->width;
-        obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
+        obj_surface->cb_cr_width = obj_surface->orig_width / 2;
         obj_surface->cb_cr_height = obj_surface->orig_height;
         obj_surface->cb_cr_pitch = memory_attibute->pitches[1];
         ASSERT_RET(IS_ALIGNED(obj_surface->cb_cr_pitch, i965->codec_info->min_linear_wpitch), VA_STATUS_ERROR_INVALID_PARAMETER);
@@ -1886,7 +1869,7 @@ i965_suface_external_memory(VADriverContextP ctx,
         obj_surface->y_cb_offset = obj_surface->height;
         obj_surface->y_cr_offset = memory_attibute->offsets[2] / obj_surface->width;
         obj_surface->cb_cr_width = obj_surface->orig_width;
-        obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+        obj_surface->cb_cr_height = obj_surface->orig_height / 2;
         obj_surface->cb_cr_pitch = memory_attibute->pitches[1];
         if (tiling)
             ASSERT_RET(IS_ALIGNED(obj_surface->cb_cr_pitch, 128), VA_STATUS_ERROR_INVALID_PARAMETER);
@@ -4543,8 +4526,8 @@ i965_check_alloc_surface_bo(VADriverContextP ctx,
         case VA_FOURCC_P010:
             assert(subsampling == SUBSAMPLE_YUV420);
             obj_surface->cb_cr_pitch = obj_surface->width;
-            obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
-            obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+            obj_surface->cb_cr_width = obj_surface->orig_width / 2;
+            obj_surface->cb_cr_height = obj_surface->orig_height / 2;
             obj_surface->y_cb_offset = obj_surface->height;
             obj_surface->y_cr_offset = obj_surface->height;
             region_width = obj_surface->width;
@@ -4555,8 +4538,8 @@ i965_check_alloc_surface_bo(VADriverContextP ctx,
         case VA_FOURCC_IMC1:
             assert(subsampling == SUBSAMPLE_YUV420);
             obj_surface->cb_cr_pitch = obj_surface->width;
-            obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
-            obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+            obj_surface->cb_cr_width = obj_surface->orig_width / 2;
+            obj_surface->cb_cr_height = obj_surface->orig_height / 2;
             obj_surface->y_cr_offset = obj_surface->height;
             obj_surface->y_cb_offset = obj_surface->y_cr_offset + ALIGN(obj_surface->cb_cr_height, 32);
             region_width = obj_surface->width;
@@ -4567,8 +4550,8 @@ i965_check_alloc_surface_bo(VADriverContextP ctx,
         case VA_FOURCC_IMC3:
             assert(subsampling == SUBSAMPLE_YUV420);
             obj_surface->cb_cr_pitch = obj_surface->width;
-            obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
-            obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+            obj_surface->cb_cr_width = obj_surface->orig_width / 2;
+            obj_surface->cb_cr_height = obj_surface->orig_height / 2;
             obj_surface->y_cb_offset = obj_surface->height;
             obj_surface->y_cr_offset = obj_surface->y_cb_offset + ALIGN(obj_surface->cb_cr_height, 32);
             region_width = obj_surface->width;
@@ -4579,7 +4562,7 @@ i965_check_alloc_surface_bo(VADriverContextP ctx,
         case VA_FOURCC_422H:
             assert(subsampling == SUBSAMPLE_YUV422H);
             obj_surface->cb_cr_pitch = obj_surface->width;
-            obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
+            obj_surface->cb_cr_width = obj_surface->orig_width / 2;
             obj_surface->cb_cr_height = obj_surface->orig_height;
             obj_surface->y_cb_offset = obj_surface->height;
             obj_surface->y_cr_offset = obj_surface->y_cb_offset + ALIGN(obj_surface->cb_cr_height, 32);
@@ -4592,7 +4575,7 @@ i965_check_alloc_surface_bo(VADriverContextP ctx,
             assert(subsampling == SUBSAMPLE_YUV422V);
             obj_surface->cb_cr_pitch = obj_surface->width;
             obj_surface->cb_cr_width = obj_surface->orig_width;
-            obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+            obj_surface->cb_cr_height = obj_surface->orig_height / 2;
             obj_surface->y_cb_offset = obj_surface->height;
             obj_surface->y_cr_offset = obj_surface->y_cb_offset + ALIGN(obj_surface->cb_cr_height, 32);
             region_width = obj_surface->width;
@@ -4680,17 +4663,17 @@ i965_check_alloc_surface_bo(VADriverContextP ctx,
         case VA_FOURCC_P010:
             obj_surface->y_cb_offset = obj_surface->height;
             obj_surface->y_cr_offset = obj_surface->height;
-            obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
+            obj_surface->cb_cr_width = obj_surface->orig_width / 2;
             obj_surface->width = ALIGN(obj_surface->cb_cr_width * 2, i965->codec_info->min_linear_wpitch) *
                                  bpp_1stplane;
-            obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+            obj_surface->cb_cr_height = obj_surface->orig_height / 2;
             obj_surface->cb_cr_pitch = obj_surface->width;
             region_width = obj_surface->width;
             region_height = obj_surface->height + obj_surface->height / 2;
             break;
 
         case VA_FOURCC_YV16:
-            obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
+            obj_surface->cb_cr_width = obj_surface->orig_width / 2;
             obj_surface->width = ALIGN(obj_surface->cb_cr_width, i965->codec_info->min_linear_wpitch) * 2;
             obj_surface->cb_cr_height = obj_surface->orig_height;
             obj_surface->y_cr_offset = obj_surface->height;
@@ -4711,9 +4694,9 @@ i965_check_alloc_surface_bo(VADriverContextP ctx,
                 obj_surface->y_cr_offset = obj_surface->height + obj_surface->height / 4;
             }
 
-            obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
+            obj_surface->cb_cr_width = obj_surface->orig_width / 2;
             obj_surface->width = ALIGN(obj_surface->cb_cr_width, i965->codec_info->min_linear_wpitch) * 2;
-            obj_surface->cb_cr_height = ALIGN(obj_surface->orig_height, 2) / 2;
+            obj_surface->cb_cr_height = obj_surface->orig_height / 2;
             obj_surface->cb_cr_pitch = obj_surface->width / 2;
             region_width = obj_surface->width;
             region_height = obj_surface->height + obj_surface->height / 2;
@@ -4722,9 +4705,9 @@ i965_check_alloc_surface_bo(VADriverContextP ctx,
         case VA_FOURCC_I010:
             obj_surface->y_cb_offset = obj_surface->height;
             obj_surface->y_cr_offset = obj_surface->height + obj_surface->height / 4;
-            obj_surface->cb_cr_width = ALIGN(obj_surface->orig_width, 2) / 2;
+            obj_surface->cb_cr_width = obj_surface->orig_width / 2;
             obj_surface->width = ALIGN(obj_surface->cb_cr_width * 2, i965->codec_info->min_linear_wpitch) * 2;
-            obj_surface->cb_cr_height =ALIGN(obj_surface->orig_height, 2) / 2;
+            obj_surface->cb_cr_height = obj_surface->orig_height / 2;
             obj_surface->cb_cr_pitch = obj_surface->width / 2;
             region_width = obj_surface->width;
             region_height = obj_surface->height + obj_surface->height / 2;
@@ -6921,16 +6904,17 @@ i965_ExportSurfaceHandle(VADriverContextP ctx, VASurfaceID surface_id,
                 else
                   y_offset = obj_surface->y_cr_offset;
             } else {
-                y_offset = obj_surface->y_cr_offset - obj_surface->y_cb_offset;              
-                if (y_offset < 0)
-                  y_offset = -y_offset;
+                if (obj_surface->y_cb_offset < obj_surface->y_cr_offset)
+                  y_offset = obj_surface->y_cr_offset;
+                else
+                  y_offset = obj_surface->y_cb_offset;
                 pitch  = obj_surface->cb_cr_pitch;
                 height = obj_surface->cb_cr_height;
             }
 
             desc->layers[p].offset[0] = offset;
             desc->layers[p].pitch[0]  = pitch;
-            offset += pitch * y_offset;
+            offset = obj_surface->width * y_offset;
         }
     }
 
