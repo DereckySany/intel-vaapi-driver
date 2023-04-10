@@ -1,5 +1,4 @@
-[![Stories in Ready](https://badge.waffle.io/intel/intel-vaapi-driver.png?label=ready&title=Ready)](http://waffle.io/intel/intel-vaapi-driver)
-[![Build Status](https://travis-ci.org/intel/intel-vaapi-driver.svg?branch=master)](https://travis-ci.org/intel/intel-vaapi-driver)
+[![Build and Test](https://github.com/DereckySany/intel-vaapi-driver/actions/workflows/main.yml/badge.svg)](https://github.com/DereckySany/intel-vaapi-driver/actions/workflows/main.yml)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/11612/badge.svg)](https://scan.coverity.com/projects/01org-intel-vaapi-driver)
 
 # Intel-vaapi-driver Project
