@@ -837,6 +837,8 @@ gen75_mfd_avc_slice_state(VADriverContextP ctx,
                          pic_param->seq_fields.bits.mb_adaptive_frame_field_flag);
     int first_mb_in_slice = 0, first_mb_in_next_slice = 0;
     int slice_type;
+    int num_surfaces = 0;	
+    int i;
 
     if (slice_param->slice_type == SLICE_TYPE_I ||
         slice_param->slice_type == SLICE_TYPE_SI) {
