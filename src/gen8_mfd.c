@@ -643,14 +643,15 @@ gen8_mfd_avc_slice_state(VADriverContextP ctx,
     }
 
     /* Don't bind a surface which doesn't exist, that crashes the GPU */
-    for (i = 0; i < ARRAY_ELEMS(gen7_mfd_context->reference_surface); i++)
+    for (i = 0; i < ARRAY_ELEMS(gen7_mfd_context->reference_surface); i++){
         if (gen7_mfd_context->reference_surface[i].surface_id != VA_INVALID_ID)
             num_surfaces ++;
-    if (num_surfaces == 0) {
-        num_ref_idx_l0 = 0;
-        num_ref_idx_l1 = 0;
+        if (num_surfaces == 0) {
+            num_ref_idx_l0 = 0;
+            num_ref_idx_l1 = 0;
+        }
     }
-
+    
     first_mb_in_slice = slice_param->first_mb_in_slice;
     slice_hor_pos = first_mb_in_slice % width_in_mbs;
     slice_ver_pos = first_mb_in_slice / width_in_mbs;
