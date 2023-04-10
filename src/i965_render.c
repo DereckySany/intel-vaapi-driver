@@ -1,5 +1,5 @@
 /*
- * Copyright © 2006 Intel Corporation
+ * Copyright ï¿½ 2006 Intel Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -3251,6 +3251,10 @@ genx_render_init(VADriverContextP ctx)
                                           "constant buffer",
                                           4096, 64);
     assert(render_state->curbe.bo);
+
+    if (IS_BAYTRAIL(i965->intel.device_id)) {
+        render_state->max_wm_threads = 48;
+    }
 
     return true;
 }
