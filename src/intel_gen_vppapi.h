@@ -31,13 +31,14 @@
 
 #include <va/va.h>
 #include <va/va_backend.h>
+#include <attributes.h>  // novo cabeçalho incluído
 
 /*
 struct i965_surface;
 struct i965_post_processing_context;
 */
 
-VAStatus attribute((hot)) attribute((always_inline))
+VAStatus __attribute__((hot, always_inline))  // declaração corrigida
 intel_common_scaling_post_processing(VADriverContextP ctx,
                                      struct i965_post_processing_context *pp_context,
                                      const struct i965_surface *src_surface,
