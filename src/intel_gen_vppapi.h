@@ -32,32 +32,15 @@
 #include <va/va.h>
 #include <va/va_backend.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct i965_surface;
+struct i965_post_processing_context;
 
-typedef struct _intel_gen_vpp_context intel_gen_vpp_context;
-
-intel_gen_vpp_context *intel_gen_vpp_create(VADisplay va_dpy);
-
-void intel_gen_vpp_destroy(intel_gen_vpp_context *vpp_ctx);
-
-VAStatus intel_gen_vpp_execute(intel_gen_vpp_context *vpp_ctx,
-                               VAProcPipelineParameterBuffer *pipeline_params,
-                               int num_buffers, VABufferID *buffers);
-
-#ifdef __cplusplus
-}
-#endif
-
-#include "i965_post_processing.h"
-
-VAStatus intel_common_scaling_post_processing(VADriverContextP ctx,
+VAStatus attribute((hot)) attribute((always_inline))
+intel_common_scaling_post_processing(VADriverContextP ctx,
                                               struct i965_post_processing_context *pp_context,
                                               const struct i965_surface *src_surface,
                                               const VARectangle *src_rect,
                                               struct i965_surface *dst_surface,
-                                              const VARectangle *dst_rect) __attribute__((hot, always_inline));
+                                              const VARectangle *dst_rect);
 
-#endif  // _INTEL_GEN_VPPAPI_H_
-
+#endif // _INTE_GEN_VPPAPI_H_
