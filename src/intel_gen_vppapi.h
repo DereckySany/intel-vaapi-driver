@@ -32,8 +32,8 @@
 #include <va/va.h>
 #include <va/va_backend.h>
 
-#include "i965_surface.h"
-#include "i965_post_processing.h"
+#include <i965_surface.h>
+#include <i965_post_processing.h>
 
 static inline VAStatus __attribute__((hot, always_inline))  // declaração corrigida
 intel_common_scaling_post_processing(VADriverContextP ctx,
