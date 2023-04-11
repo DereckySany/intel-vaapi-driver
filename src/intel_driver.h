@@ -225,7 +225,7 @@ struct intel_region {
 #define IS_GEN6(device_info)            (device_info->gen == 6)
 
 #define IS_HASWELL(device_info)         (device_info->is_haswell)
-#define IS_BAYTRAIL(device_info)         (device_info->is_baytrail || device_info->gen == 7)
+#define IS_BAYTRAIL(device_info)         (device_info->is_baytrail)
 #define IS_GEN7(device_info)            (device_info->gen == 7)
 
 #define IS_CHERRYVIEW(device_info)      (device_info->is_cherryview)
