@@ -1,0 +1,27 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get install -y build-essential autoconf automake libtool m4 lcov perl pkg-config libdrm-dev libegl1-mesa-dev libgl1-mesa-dev libwayland-dev libx11-dev libxext-dev libxfixes-dev intel-gpu-tools
+          git clone https://github.com/intel/libva.git
+          (cd libva && ./autogen.sh && ./configure --prefix=/usr && sudo make install)
+      - name: Build and test
+        run: |
+          ./autogen.sh
+          ./configure --prefix=/usr
+          make -j4
+          make check
+        if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
