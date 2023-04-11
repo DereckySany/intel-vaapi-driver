@@ -895,30 +895,28 @@ i965_validate_config(VADriverContextP ctx, VAProfile profile,
                    !i965->wrapper_pdrvctx) {
             va_status = VA_STATUS_ERROR_UNSUPPORTED_PROFILE;
         } else {
-            va_status = VA_STATUS_ERROR_UNSUPPORTED_ENTRYPOINT;
-        }
-        
-        if (i965->wrapper_pdrvctx && va_status != VA_STATUS_SUCCESS) {
-            VAEntrypoint wrapper_entrypoints[5] = {0};
-            int32_t wrapper_num_entrypoints = 0;
-            VADriverContextP pdrvctx = i965->wrapper_pdrvctx;
-            
-            CALL_VTABLE(pdrvctx, va_status,
-                        vaQueryConfigEntrypoints(pdrvctx,
-                                                 profile,
-                                                 wrapper_entrypoints,
-                                                 &wrapper_num_entrypoints));
-            
-            if (va_status == VA_STATUS_SUCCESS) {
-                va_status = VA_STATUS_ERROR_UNSUPPORTED_ENTRYPOINT;
-                for (int i = 0; i < wrapper_num_entrypoints; i++) {
-                    if (entrypoint == wrapper_entrypoints[i]) {
-                        va_status = VA_STATUS_SUCCESS;
+            if (i965->wrapper_pdrvctx && va_status != VA_STATUS_SUCCESS) {
+                VAEntrypoint wrapper_entrypoints[5] = {0};
+                int32_t wrapper_num_entrypoints = 0;
+                VADriverContextP pdrvctx = i965->wrapper_pdrvctx;
+
+                CALL_VTABLE(pdrvctx, va_status,
+                            vaQueryConfigEntrypoints(pdrvctx,
+                                                     profile,
+                                                     wrapper_entrypoints,
+                                                     &wrapper_num_entrypoints));
+
+                if (va_status == VA_STATUS_SUCCESS) {
+                    va_status = VA_STATUS_ERROR_UNSUPPORTED_ENTRYPOINT;
+                    for (int i = 0; i < wrapper_num_entrypoints; i++) {
+                        if (entrypoint == wrapper_entrypoints[i]) {
+                            va_status = VA_STATUS_SUCCESS;
+                        }
                     }
                 }
             }
         }
-        
+       
         break;
 
     default:
