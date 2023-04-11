@@ -2,10 +2,12 @@ name: Build and Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main,.* ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+  workflow_run:
+    branches: [.*]
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
