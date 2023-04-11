@@ -32,8 +32,10 @@
 #include <va/va.h>
 #include <va/va_backend.h>
 
+/*
 struct i965_surface;
 struct i965_post_processing_context;
+*/
 
 VAStatus attribute((hot)) attribute((always_inline))
 intel_common_scaling_post_processing(VADriverContextP ctx,
