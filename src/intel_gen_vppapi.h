@@ -35,7 +35,7 @@
 /* #include <i965_surface.h> */
 #include <i965_post_processing.h>
 
-static inline VAStatus __attribute__((hot, always_inline))  // declaração corrigida
+VAStatus __attribute__((hot, always_inline))  // declaração corrigida
 intel_common_scaling_post_processing(VADriverContextP ctx,
                                      struct i965_post_processing_context *pp_context,
                                      const struct i965_surface *src_surface,
