@@ -41,13 +41,6 @@ intel_common_scaling_post_processing(VADriverContextP ctx,
                                      const struct i965_surface *src_surface,
                                      const VARectangle *src_rect,
                                      struct i965_surface *dst_surface,
-                                     const VARectangle *dst_rect)
-{
-    VAStatus status = VA_STATUS_SUCCESS;
-
-    // Function body here
-
-    return status;
-}
+                                     const VARectangle *dst_rect);
 
 #endif  /* _INTEL_GEN_VPPAPI_H_ */
