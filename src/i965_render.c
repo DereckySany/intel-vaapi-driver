@@ -2886,6 +2886,9 @@ gen7_emit_wm_state(VADriverContextP ctx, int kernel)
         max_threads_shift = GEN7_PS_MAX_THREADS_SHIFT_HSW;
         num_samples = 1 << GEN7_PS_SAMPLE_MASK_SHIFT_HSW;
     }
+    if (IS_BAYTRAIL(i965->intel.device_info)) {
+        max_threads_shift = 48;
+    }
 
     BEGIN_BATCH(batch, 3);
     OUT_BATCH(batch, GEN6_3DSTATE_WM | (3 - 2));
@@ -3251,10 +3254,6 @@ genx_render_init(VADriverContextP ctx)
                                           "constant buffer",
                                           4096, 64);
     assert(render_state->curbe.bo);
-
-    if (IS_BAYTRAIL(i965->intel.device_id)) {
-        render_state->max_wm_threads = 48;
-    }
 
     return true;
 }
