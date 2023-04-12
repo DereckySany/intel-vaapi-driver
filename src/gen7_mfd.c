@@ -3079,7 +3079,7 @@ gen7_mfd_jpeg_decode_picture(VADriverContextP ctx,
     VAPictureParameterBufferJPEGBaseline *pic_param = (VAPictureParameterBufferJPEGBaseline *)decode_state->pic_param->buffer;
     VASliceParameterBufferJPEGBaseline *slice_param, *next_slice_param, *next_slice_group_param;
     dri_bo *slice_data_bo;
-    int i, j, max_selector = 0;
+    int i, j, max_selector, max = 0;
 
     gen7_mfd_jpeg_decode_init(ctx, decode_state, gen7_mfd_context);
     intel_batchbuffer_start_atomic_bcs(batch, 0x1000);
