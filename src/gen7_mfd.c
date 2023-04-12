@@ -3092,31 +3092,39 @@ gen7_mfd_decode_picture(VADriverContextP ctx,
     gen7_mfd_context->wa_mpeg2_slice_vertical_position = -1;
 
     switch (profile) {
-    case VAProfileMPEG2Simple:
-    case VAProfileMPEG2Main:
-        gen7_mfd_mpeg2_decode_picture(ctx, decode_state, gen7_mfd_context);
-        break;
+        case VAProfileH264Baseline:
+        case VAProfileH264ConstrainedBaseline:
+        case VAProfileH264Main:
+        case VAProfileH264High:
+        case VAProfileH264MultiviewHigh:
+        case VAProfileH264StereoHigh:
+            gen7_mfd_avc_decode_picture(ctx, decode_state, gen7_mfd_context);
+            break;
+            
+        case VAProfileMPEG2Simple:
+        case VAProfileMPEG2Main:
+        case VAProfileMPEG2High:
+            vaStatus = gen7_mfd_mpeg2_decode_picture(ctx, decode_state, gen7_mfd_context);
+            break;
 
-    case VAProfileH264ConstrainedBaseline:
-    case VAProfileH264Main:
-    case VAProfileH264High:
-    case VAProfileH264StereoHigh:
-        gen7_mfd_avc_decode_picture(ctx, decode_state, gen7_mfd_context);
-        break;
+        case VAProfileVC1Simple:
+        case VAProfileVC1Main:
+        case VAProfileVC1Advanced:
+            vaStatus = gen7_mfd_vc1_decode_picture(ctx, decode_state, gen7_mfd_context);
+            break;
 
-    case VAProfileVC1Simple:
-    case VAProfileVC1Main:
-    case VAProfileVC1Advanced:
-        gen7_mfd_vc1_decode_picture(ctx, decode_state, gen7_mfd_context);
-        break;
-
-    case VAProfileJPEGBaseline:
-        gen7_mfd_jpeg_decode_picture(ctx, decode_state, gen7_mfd_context);
-        break;
-
-    default:
-        assert(0);
-        break;
+        case VAProfileJPEGBaseline:
+            gen7_mfd_jpeg_decode_picture(ctx, decode_state, gen7_mfd_context);
+            break;
+            /*
+        case VAProfileVP8Version0_3:
+            vaStatus = gen7_mfd_vp8_decode_picture(ctx, decode_state, gen7_mfd_context);
+            break; 
+            */
+        /* FIXME: add for other profile */
+        default:
+            assert(0);
+            break;
     }
 
     vaStatus = VA_STATUS_SUCCESS;
@@ -3203,9 +3211,11 @@ gen7_dec_hw_context_init(VADriverContextP ctx, struct object_config *obj_config)
         gen7_mfd_mpeg2_context_init(ctx, gen7_mfd_context);
         break;
 
+    case VAProfileH264Baseline:
     case VAProfileH264ConstrainedBaseline:
     case VAProfileH264Main:
     case VAProfileH264High:
+    case VAProfileH264MultiviewHigh:
     case VAProfileH264StereoHigh:
         gen7_mfd_avc_context_init(ctx, gen7_mfd_context);
         break;

@@ -1106,7 +1106,7 @@ gen7_mfc_pipeline(VADriverContextP ctx,
                   struct intel_encoder_context *encoder_context)
 {
     VAStatus vaStatus;
-  
+    
     switch (profile) {
         case VAProfileH264ConstrainedBaseline:
         case VAProfileH264Main:
@@ -1119,17 +1119,7 @@ gen7_mfc_pipeline(VADriverContextP ctx,
             vaStatus = gen7_mfc_mpeg2_encode_picture(ctx, encode_state, encoder_context);
             break;
 
-        case VAProfileVC1Simple:
-        case VAProfileVC1Main:
-        case VAProfileVC1Advanced:
-            vaStatus = gen7_mfc_vc1_encode_picture(ctx, encode_state, encoder_context);
-            break;
-
-        case VAProfileHEVCMain:
-        case VAProfileHEVCMain10:
-            vaStatus = gen9_mfc_hevc_encode_picture(ctx, encode_state, encoder_context);
-            break;
-
+        /* FIXME: add support for other profiles */
         default:
             vaStatus = VA_STATUS_ERROR_UNSUPPORTED_PROFILE;
             break;
