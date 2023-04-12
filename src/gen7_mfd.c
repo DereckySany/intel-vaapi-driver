@@ -2982,21 +2982,105 @@ gen7_mfd_jpeg_wa(VADriverContextP ctx,
     gen7_jpeg_wa_avc_bsd_object(ctx, gen7_mfd_context);
 }
 
+// void
+// gen7_mfd_jpeg_decode_picture(VADriverContextP ctx,
+//                              struct decode_state *decode_state,
+//                              struct gen7_mfd_context *gen7_mfd_context)
+// {
+//     struct intel_batchbuffer *batch = gen7_mfd_context->base.batch;
+//     VAPictureParameterBufferJPEGBaseline *pic_param;
+//     VASliceParameterBufferJPEGBaseline *slice_param, *next_slice_param, *next_slice_group_param;
+//     dri_bo *slice_data_bo;
+//     int i, j, max_selector = 0;
+
+//     assert(decode_state->pic_param && decode_state->pic_param->buffer);
+//     pic_param = (VAPictureParameterBufferJPEGBaseline *)decode_state->pic_param->buffer;
+
+//     /* Currently only support Baseline DCT */
+//     gen7_mfd_jpeg_decode_init(ctx, decode_state, gen7_mfd_context);
+//     intel_batchbuffer_start_atomic_bcs(batch, 0x1000);
+//     gen7_mfd_jpeg_wa(ctx, gen7_mfd_context);
+//     intel_batchbuffer_emit_mi_flush(batch);
+//     gen7_mfd_pipe_mode_select(ctx, decode_state, MFX_FORMAT_JPEG, gen7_mfd_context);
+//     gen7_mfd_surface_state(ctx, decode_state, MFX_FORMAT_JPEG, gen7_mfd_context);
+//     gen7_mfd_pipe_buf_addr_state(ctx, decode_state, MFX_FORMAT_JPEG, gen7_mfd_context);
+//     gen7_mfd_jpeg_pic_state(ctx, decode_state, gen7_mfd_context);
+//     gen7_mfd_jpeg_qm_state(ctx, decode_state, gen7_mfd_context);
+
+//     for (j = 0; j < decode_state->num_slice_params; j++) {
+//         assert(decode_state->slice_params && decode_state->slice_params[j]->buffer);
+//         slice_param = (VASliceParameterBufferJPEGBaseline *)decode_state->slice_params[j]->buffer;
+//         slice_data_bo = decode_state->slice_datas[j]->bo;
+//         gen7_mfd_ind_obj_base_addr_state(ctx, slice_data_bo, MFX_FORMAT_JPEG, gen7_mfd_context);
+
+//         if (j == decode_state->num_slice_params - 1)
+//             next_slice_group_param = NULL;
+//         else
+//             next_slice_group_param = (VASliceParameterBufferJPEGBaseline *)decode_state->slice_params[j + 1]->buffer;
+
+//         for (i = 0; i < decode_state->slice_params[j]->num_elements; i++) {
+//             int component;
+
+//             assert(slice_param->slice_data_flag == VA_SLICE_DATA_FLAG_ALL);
+
+//             if (i < decode_state->slice_params[j]->num_elements - 1)
+//                 next_slice_param = slice_param + 1;
+//             else
+//                 next_slice_param = next_slice_group_param;
+
+//             for (component = 0; component < slice_param->num_components; component++) {
+//                 if (max_selector < slice_param->components[component].dc_table_selector)
+//                     max_selector = slice_param->components[component].dc_table_selector;
+
+//                 if (max_selector < slice_param->components[component].ac_table_selector)
+//                     max_selector = slice_param->components[component].ac_table_selector;
+//             }
+
+//             slice_param++;
+//         }
+//     }
+
+//     assert(max_selector < 2);
+//     gen7_mfd_jpeg_huff_table_state(ctx, decode_state, gen7_mfd_context, max_selector + 1);
+
+//     for (j = 0; j < decode_state->num_slice_params; j++) {
+//         assert(decode_state->slice_params && decode_state->slice_params[j]->buffer);
+//         slice_param = (VASliceParameterBufferJPEGBaseline *)decode_state->slice_params[j]->buffer;
+//         slice_data_bo = decode_state->slice_datas[j]->bo;
+//         gen7_mfd_ind_obj_base_addr_state(ctx, slice_data_bo, MFX_FORMAT_JPEG, gen7_mfd_context);
+
+//         if (j == decode_state->num_slice_params - 1)
+//             next_slice_group_param = NULL;
+//         else
+//             next_slice_group_param = (VASliceParameterBufferJPEGBaseline *)decode_state->slice_params[j + 1]->buffer;
+
+//         for (i = 0; i < decode_state->slice_params[j]->num_elements; i++) {
+//             assert(slice_param->slice_data_flag == VA_SLICE_DATA_FLAG_ALL);
+
+//             if (i < decode_state->slice_params[j]->num_elements - 1)
+//                 next_slice_param = slice_param + 1;
+//             else
+//                 next_slice_param = next_slice_group_param;
+
+//             gen7_mfd_jpeg_bsd_object(ctx, pic_param, slice_param, next_slice_param, slice_data_bo, gen7_mfd_context);
+//             slice_param++;
+//         }
+//     }
+
+//     intel_batchbuffer_end_atomic(batch);
+//     intel_batchbuffer_flush(batch);
+// }
 void
 gen7_mfd_jpeg_decode_picture(VADriverContextP ctx,
                              struct decode_state *decode_state,
                              struct gen7_mfd_context *gen7_mfd_context)
 {
     struct intel_batchbuffer *batch = gen7_mfd_context->base.batch;
-    VAPictureParameterBufferJPEGBaseline *pic_param;
+    VAPictureParameterBufferJPEGBaseline *pic_param = (VAPictureParameterBufferJPEGBaseline *)decode_state->pic_param->buffer;
     VASliceParameterBufferJPEGBaseline *slice_param, *next_slice_param, *next_slice_group_param;
     dri_bo *slice_data_bo;
     int i, j, max_selector = 0;
 
-    assert(decode_state->pic_param && decode_state->pic_param->buffer);
-    pic_param = (VAPictureParameterBufferJPEGBaseline *)decode_state->pic_param->buffer;
-
-    /* Currently only support Baseline DCT */
     gen7_mfd_jpeg_decode_init(ctx, decode_state, gen7_mfd_context);
     intel_batchbuffer_start_atomic_bcs(batch, 0x1000);
     gen7_mfd_jpeg_wa(ctx, gen7_mfd_context);
@@ -3008,7 +3092,6 @@ gen7_mfd_jpeg_decode_picture(VADriverContextP ctx,
     gen7_mfd_jpeg_qm_state(ctx, decode_state, gen7_mfd_context);
 
     for (j = 0; j < decode_state->num_slice_params; j++) {
-        assert(decode_state->slice_params && decode_state->slice_params[j]->buffer);
         slice_param = (VASliceParameterBufferJPEGBaseline *)decode_state->slice_params[j]->buffer;
         slice_data_bo = decode_state->slice_datas[j]->bo;
         gen7_mfd_ind_obj_base_addr_state(ctx, slice_data_bo, MFX_FORMAT_JPEG, gen7_mfd_context);
@@ -3018,9 +3101,7 @@ gen7_mfd_jpeg_decode_picture(VADriverContextP ctx,
         else
             next_slice_group_param = (VASliceParameterBufferJPEGBaseline *)decode_state->slice_params[j + 1]->buffer;
 
-        for (i = 0; i < decode_state->slice_params[j]->num_elements; i++) {
-            int component;
-
+        for (i = 0; i < decode_state->slice_params[j]->num_elements; i++, slice_param++) {
             assert(slice_param->slice_data_flag == VA_SLICE_DATA_FLAG_ALL);
 
             if (i < decode_state->slice_params[j]->num_elements - 1)
@@ -3028,48 +3109,22 @@ gen7_mfd_jpeg_decode_picture(VADriverContextP ctx,
             else
                 next_slice_param = next_slice_group_param;
 
-            for (component = 0; component < slice_param->num_components; component++) {
-                if (max_selector < slice_param->components[component].dc_table_selector)
-                    max_selector = slice_param->components[component].dc_table_selector;
-
-                if (max_selector < slice_param->components[component].ac_table_selector)
-                    max_selector = slice_param->components[component].ac_table_selector;
+            for (int component = 0; component < slice_param->num_components; component++) {
+                max_selector = max(max_selector, slice_param->components[component].dc_table_selector);
+                max_selector = max(max_selector, slice_param->components[component].ac_table_selector);
             }
 
-            slice_param++;
+            gen7_mfd_jpeg_bsd_object(ctx, pic_param, slice_param, next_slice_param, slice_data_bo, gen7_mfd_context);
         }
     }
 
     assert(max_selector < 2);
     gen7_mfd_jpeg_huff_table_state(ctx, decode_state, gen7_mfd_context, max_selector + 1);
 
-    for (j = 0; j < decode_state->num_slice_params; j++) {
-        assert(decode_state->slice_params && decode_state->slice_params[j]->buffer);
-        slice_param = (VASliceParameterBufferJPEGBaseline *)decode_state->slice_params[j]->buffer;
-        slice_data_bo = decode_state->slice_datas[j]->bo;
-        gen7_mfd_ind_obj_base_addr_state(ctx, slice_data_bo, MFX_FORMAT_JPEG, gen7_mfd_context);
-
-        if (j == decode_state->num_slice_params - 1)
-            next_slice_group_param = NULL;
-        else
-            next_slice_group_param = (VASliceParameterBufferJPEGBaseline *)decode_state->slice_params[j + 1]->buffer;
-
-        for (i = 0; i < decode_state->slice_params[j]->num_elements; i++) {
-            assert(slice_param->slice_data_flag == VA_SLICE_DATA_FLAG_ALL);
-
-            if (i < decode_state->slice_params[j]->num_elements - 1)
-                next_slice_param = slice_param + 1;
-            else
-                next_slice_param = next_slice_group_param;
-
-            gen7_mfd_jpeg_bsd_object(ctx, pic_param, slice_param, next_slice_param, slice_data_bo, gen7_mfd_context);
-            slice_param++;
-        }
-    }
-
     intel_batchbuffer_end_atomic(batch);
     intel_batchbuffer_flush(batch);
 }
+
 
 static VAStatus
 gen7_mfd_decode_picture(VADriverContextP ctx,
