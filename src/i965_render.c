@@ -849,7 +849,7 @@ i965_render_src_surface_state(
     assert(ss_bo->virtual);
     ss = (char *)ss_bo->virtual + SURFACE_STATE_OFFSET(index);
 
-    if (IS_GEN7(i965->intel.device_info)) {
+    if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info)) {
         gen7_render_set_surface_state(ss,
                                       region, offset,
                                       w, h,
@@ -967,7 +967,7 @@ i965_render_dest_surface_state(VADriverContextP ctx, int index)
     assert(ss_bo->virtual);
     ss = (char *)ss_bo->virtual + SURFACE_STATE_OFFSET(index);
 
-    if (IS_GEN7(i965->intel.device_info)) {
+    if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info)) {
         gen7_render_set_surface_state(ss,
                                       dest_region->bo, 0,
                                       dest_region->width, dest_region->height,
@@ -1558,7 +1558,7 @@ i965_clear_dest_region(VADriverContextP ctx)
     br13 |= pitch;
 
     if (IS_GEN6(i965->intel.device_info) ||
-        IS_GEN7(i965->intel.device_info)) {
+        IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info)) {
         intel_batchbuffer_start_atomic_blt(batch, 24);
         BEGIN_BLT_BATCH(batch, 6);
     } else {
@@ -3214,7 +3214,7 @@ genx_render_init(VADriverContextP ctx)
     assert(NUM_RENDER_KERNEL == (sizeof(render_kernels_gen6) /
                                  sizeof(render_kernels_gen6[0])));
 
-    if (IS_GEN7(i965->intel.device_info)) {
+    if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info)) {
         memcpy(render_state->render_kernels,
                (IS_HASWELL(i965->intel.device_info) ? render_kernels_gen7_haswell : render_kernels_gen7),
                sizeof(render_state->render_kernels));

@@ -2156,7 +2156,7 @@ intel_h264_enc_roi_config(VADriverContextP ctx,
         vme_context->roi_enabled = 0;
     }
 
-    if (vme_context->roi_enabled && IS_GEN7(i965->intel.device_info))
+    if (vme_context->roi_enabled && (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info)))
         encoder_context->soft_batch_force = 1;
 
     return;

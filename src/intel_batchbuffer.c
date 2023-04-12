@@ -219,6 +219,7 @@ intel_batchbuffer_emit_mi_flush(struct intel_batchbuffer *batch)
 
     if (IS_GEN6(intel->device_info) ||
         IS_GEN7(intel->device_info) ||
+        IS_BAYTRAIL(intel.device_info) ||
         IS_GEN8(intel->device_info) ||
         IS_GEN9(intel->device_info) ||
         IS_GEN10(intel->device_info)) {

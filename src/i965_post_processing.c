@@ -4362,7 +4362,7 @@ gen6_pp_initialize(
     assert(bo);
     pp_context->vfe_state.bo = bo;
 
-    if (IS_GEN7(i965->intel.device_info)) {
+    if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info)) {
         static_param_size = sizeof(struct gen7_pp_static_parameter);
         inline_param_size = sizeof(struct gen7_pp_inline_parameter);
     } else {
@@ -4418,7 +4418,7 @@ gen6_pp_interface_descriptor_table(VADriverContextP   ctx,
     desc->desc3.binding_table_pointer = (BINDING_TABLE_OFFSET >> 5);
     desc->desc4.constant_urb_entry_read_offset = 0;
 
-    if (IS_GEN7(i965->intel.device_info))
+    if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info))
         desc->desc4.constant_urb_entry_read_length = 8; /* grf 1-8 */
     else
         desc->desc4.constant_urb_entry_read_length = 4; /* grf 1-4 */
@@ -4450,7 +4450,7 @@ gen6_pp_upload_constants(VADriverContextP ctx,
     assert(sizeof(struct pp_static_parameter) == 128);
     assert(sizeof(struct gen7_pp_static_parameter) == 256);
 
-    if (IS_GEN7(i965->intel.device_info))
+    if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info))
         param_size = sizeof(struct gen7_pp_static_parameter);
     else
         param_size = sizeof(struct pp_static_parameter);
@@ -4547,7 +4547,7 @@ gen6_pp_curbe_load(VADriverContextP ctx,
     struct i965_driver_data *i965 = i965_driver_data(ctx);
     int param_size;
 
-    if (IS_GEN7(i965->intel.device_info))
+    if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info))
         param_size = sizeof(struct gen7_pp_static_parameter);
     else
         param_size = sizeof(struct pp_static_parameter);
@@ -4630,7 +4630,7 @@ gen6_pp_object_walker(VADriverContextP ctx,
     dri_bo *command_buffer;
     unsigned int *command_ptr;
 
-    if (IS_GEN7(i965->intel.device_info))
+    if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info))
         param_size = sizeof(struct gen7_pp_inline_parameter);
     else
         param_size = sizeof(struct pp_inline_parameter);
@@ -5695,7 +5695,7 @@ i965_post_processing_context_init(VADriverContextP ctx,
 
     if (IS_HASWELL(i965->intel.device_info))
         memcpy(pp_context->pp_modules, pp_modules_gen75, sizeof(pp_context->pp_modules));
-    else if (IS_GEN7(i965->intel.device_info))
+    else if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info))
         memcpy(pp_context->pp_modules, pp_modules_gen7, sizeof(pp_context->pp_modules));
     else if (IS_GEN6(i965->intel.device_info))
         memcpy(pp_context->pp_modules, pp_modules_gen6, sizeof(pp_context->pp_modules));
@@ -5718,7 +5718,7 @@ i965_post_processing_context_init(VADriverContextP ctx,
     }
 
     /* static & inline parameters */
-    if (IS_GEN7(i965->intel.device_info)) {
+    if (IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info)) {
         pp_context->pp_static_parameter = calloc(sizeof(struct gen7_pp_static_parameter), 1);
         pp_context->pp_inline_parameter = calloc(sizeof(struct gen7_pp_inline_parameter), 1);
     } else {
@@ -5979,7 +5979,7 @@ i965_proc_picture_fast(VADriverContextP ctx,
     dst_surface.flags = I965_SURFACE_FLAG_FRAME;
 
     /* Validate "fast-path" processing capabilities */
-    if (!IS_GEN7(i965->intel.device_info)) {
+    if (!IS_GEN7(i965->intel.device_info) || IS_BAYTRAIL(i965->intel.device_info)) {
         if ((pp_ops & PP_OP_CHANGE_FORMAT) && (pp_ops & PP_OP_CHANGE_SIZE))
             return VA_STATUS_ERROR_UNIMPLEMENTED; // temporary surface is needed
     }
@@ -6216,6 +6216,7 @@ i965_proc_picture(VADriverContextP ctx,
     }
 
     if (IS_GEN7(i965->intel.device_info) ||
+        IS_BAYTRAIL(i965->intel.device_info) ||
         IS_GEN8(i965->intel.device_info) ||
         IS_GEN9(i965->intel.device_info) ||
         IS_GEN10(i965->intel.device_info)) {
