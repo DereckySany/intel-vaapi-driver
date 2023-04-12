@@ -3103,14 +3103,13 @@ gen7_mfd_decode_picture(VADriverContextP ctx,
             
         case VAProfileMPEG2Simple:
         case VAProfileMPEG2Main:
-        case VAProfileMPEG2High:
-            vaStatus = gen7_mfd_mpeg2_decode_picture(ctx, decode_state, gen7_mfd_context);
+            gen7_mfd_mpeg2_decode_picture(ctx, decode_state, gen7_mfd_context);
             break;
 
         case VAProfileVC1Simple:
         case VAProfileVC1Main:
         case VAProfileVC1Advanced:
-            vaStatus = gen7_mfd_vc1_decode_picture(ctx, decode_state, gen7_mfd_context);
+            gen7_mfd_vc1_decode_picture(ctx, decode_state, gen7_mfd_context);
             break;
 
         case VAProfileJPEGBaseline:
