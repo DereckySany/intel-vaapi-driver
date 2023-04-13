@@ -28,10 +28,6 @@
 
 #include "sysdeps.h"
 
-#include <stdio.h> //new
-#include <stdlib.h> //new
-#include <string.h> //new
-#include <assert.h> //new
 #include <math.h> //new
 #include <va/va_dec_jpeg.h>
 #include <va/va_dec_vp8.h> //new
@@ -45,9 +41,6 @@
 
 #include "gen7_mfd.h"
 #include "intel_media.h"
-
-#define B0_STEP_REV     2
-#define IS_STEPPING_BPLUS(i965) ((i965->intel.revision) >= B0_STEP_REV)
 
 static const uint32_t zigzag_direct[64] = {
     0,   1,  8, 16,  9,  2,  3, 10,
@@ -405,7 +398,7 @@ gen7_mfd_avc_img_state(VADriverContextP ctx,
     OUT_BCS_BATCH(batch, 0);
     ADVANCE_BCS_BATCH(batch);
 }
-
+/*
 static void
 gen7_mfd_avc_qm_state(VADriverContextP ctx,
                       struct decode_state *decode_state,
@@ -430,6 +423,38 @@ gen7_mfd_avc_qm_state(VADriverContextP ctx,
         gen7_mfd_qm_state(ctx, MFX_QM_AVC_8x8_INTER_MATRIX, &iq_matrix->ScalingList8x8[1][0], 64, gen7_mfd_context);
     }
 }
+*/
+static void
+gen7_mfd_avc_qm_state(VADriverContextP ctx,
+                      struct decode_state *decode_state,
+                      struct gen7_mfd_context *gen7_mfd_context)
+{
+    VAIQMatrixBufferH264 *iq_matrix = &gen7_mfd_context->iq_matrix.h264;
+    VAPictureParameterBufferH264 *pic_param;
+
+    if (!decode_state) {
+        return;
+    }
+
+    if (decode_state->iq_matrix && decode_state->iq_matrix->buffer) {
+        iq_matrix = (VAIQMatrixBufferH264 *)decode_state->iq_matrix->buffer;
+    }
+
+    if (!decode_state->pic_param || !decode_state->pic_param->buffer) {
+        return;
+    }
+    
+    pic_param = (VAPictureParameterBufferH264 *)decode_state->pic_param->buffer;
+
+    gen7_mfd_qm_state(ctx, MFX_QM_AVC_4X4_INTRA_MATRIX, &iq_matrix->ScalingList4x4[0][0], 3 * 16, gen7_mfd_context);
+    gen7_mfd_qm_state(ctx, MFX_QM_AVC_4X4_INTER_MATRIX, &iq_matrix->ScalingList4x4[3][0], 3 * 16, gen7_mfd_context);
+
+    if (pic_param->pic_fields.bits.transform_8x8_mode_flag) {
+        gen7_mfd_qm_state(ctx, MFX_QM_AVC_8x8_INTRA_MATRIX, &iq_matrix->ScalingList8x8[0][0], 64, gen7_mfd_context);
+        gen7_mfd_qm_state(ctx, MFX_QM_AVC_8x8_INTER_MATRIX, &iq_matrix->ScalingList8x8[1][0], 64, gen7_mfd_context);
+    }
+}
+
 
 static inline void
 gen7_mfd_avc_picid_state(VADriverContextP ctx,
@@ -3475,7 +3500,6 @@ gen7_mfd_decode_picture(VADriverContextP ctx,
             gen7_mfd_mpeg2_decode_picture(ctx, decode_state, gen7_mfd_context);
             break;
 
-        case VAProfileH264Baseline:
         case VAProfileH264ConstrainedBaseline:
         case VAProfileH264Main:
         case VAProfileH264High:
@@ -3587,7 +3611,6 @@ gen7_dec_hw_context_init(VADriverContextP ctx, struct object_config *obj_config)
         gen7_mfd_mpeg2_context_init(ctx, gen7_mfd_context);
         break;
 
-    case VAProfileH264Baseline:
     case VAProfileH264ConstrainedBaseline:
     case VAProfileH264Main:
     case VAProfileH264High:
@@ -3595,6 +3618,7 @@ gen7_dec_hw_context_init(VADriverContextP ctx, struct object_config *obj_config)
     case VAProfileH264StereoHigh:
         gen7_mfd_avc_context_init(ctx, gen7_mfd_context);
         break;
+
     default:
         break;
     }
