@@ -27,11 +27,14 @@
  */
 
 #include "sysdeps.h"
+#include <math.h> //new
 
 #include <va/va_dec_jpeg.h>
+#include <va/va_dec_vp8.h> //new
 
 #include "intel_batchbuffer.h"
 #include "intel_driver.h"
+
 #include "i965_defines.h"
 #include "i965_drv_video.h"
 #include "i965_decoder_utils.h"
