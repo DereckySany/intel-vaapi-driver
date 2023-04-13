@@ -158,7 +158,8 @@ static struct hw_codec_info ivb_hw_codec_info = {
     .min_linear_wpitch = 64,
     .min_linear_hpitch = 4,
 
-    .h264_mvc_dec_profiles = VA_PROFILE_MASK(H264StereoHigh),
+    .h264_mvc_dec_profiles = (VA_PROFILE_MASK(H264StereoHigh) ||
+    VA_PROFILE_MASK(H264MultiviewHigh)),
     .h264_dec_chroma_formats = EXTRA_H264_DEC_CHROMA_FORMATS,
     .jpeg_dec_chroma_formats = EXTRA_JPEG_DEC_CHROMA_FORMATS,
 
@@ -174,6 +175,7 @@ static struct hw_codec_info ivb_hw_codec_info = {
     .has_tiled_surface = 1,
     .has_di_motion_adptive = 1,
     .has_di_motion_compensated = 1,
+    .has_h264_mvc_encoding = (is_baytrail),
 
     .h264_brc_mode = VA_RC_CQP | VA_RC_CBR | VA_RC_VBR,
 
