@@ -175,7 +175,7 @@ static struct hw_codec_info ivb_hw_codec_info = {
     .has_tiled_surface = 1,
     .has_di_motion_adptive = 1,
     .has_di_motion_compensated = 1,
-    .has_h264_mvc_encoding = (is_baytrail),
+    .has_h264_mvc_encoding = 1,
 
     .h264_brc_mode = VA_RC_CQP | VA_RC_CBR | VA_RC_VBR,
 
