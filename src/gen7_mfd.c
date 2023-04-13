@@ -27,8 +27,12 @@
  */
 
 #include "sysdeps.h"
-#include <math.h> //new
 
+#include <stdio.h> //new
+#include <stdlib.h> //new
+#include <string.h> //new
+#include <assert.h> //new
+#include <math.h> //new
 #include <va/va_dec_jpeg.h>
 #include <va/va_dec_vp8.h> //new
 
@@ -41,6 +45,9 @@
 
 #include "gen7_mfd.h"
 #include "intel_media.h"
+
+#define B0_STEP_REV     2
+#define IS_STEPPING_BPLUS(i965) ((i965->intel.revision) >= B0_STEP_REV)
 
 static const uint32_t zigzag_direct[64] = {
     0,   1,  8, 16,  9,  2,  3, 10,
@@ -422,6 +429,15 @@ gen7_mfd_avc_qm_state(VADriverContextP ctx,
         gen7_mfd_qm_state(ctx, MFX_QM_AVC_8x8_INTRA_MATRIX, &iq_matrix->ScalingList8x8[0][0], 64, gen7_mfd_context);
         gen7_mfd_qm_state(ctx, MFX_QM_AVC_8x8_INTER_MATRIX, &iq_matrix->ScalingList8x8[1][0], 64, gen7_mfd_context);
     }
+}
+
+static inline void
+gen7_mfd_avc_picid_state(VADriverContextP ctx,
+                         struct decode_state *decode_state,
+                         struct gen7_mfd_context *gen7_mfd_context)
+{
+    gen75_send_avc_picid_state(gen7_mfd_context->base.batch,
+                               gen7_mfd_context->reference_surface);
 }
 
 static void
@@ -3074,52 +3090,7 @@ gen7_mfd_jpeg_decode_picture(VADriverContextP ctx,
     intel_batchbuffer_end_atomic(batch);
     intel_batchbuffer_flush(batch);
 }
-
 // ===================== ADD NEW ================================
-
-void
-gen7_mfd_vp8_decode_picture(VADriverContextP ctx,
-                            struct decode_state *decode_state,
-                            struct gen7_mfd_context *gen7_mfd_context)
-{
-    struct intel_batchbuffer *batch = gen7_mfd_context->base.batch;
-    VAPictureParameterBufferVP8 *pic_param;
-    VASliceParameterBufferVP8 *slice_param;
-    dri_bo *slice_data_bo;
-
-    assert(decode_state->pic_param && decode_state->pic_param->buffer);
-    pic_param = (VAPictureParameterBufferVP8 *)decode_state->pic_param->buffer;
-
-    /* one slice per frame */
-    if (decode_state->num_slice_params != 1 ||
-        (!decode_state->slice_params ||
-         !decode_state->slice_params[0] ||
-         (decode_state->slice_params[0]->num_elements != 1 || decode_state->slice_params[0]->buffer == NULL)) ||
-        (!decode_state->slice_datas ||
-         !decode_state->slice_datas[0] ||
-         !decode_state->slice_datas[0]->bo) ||
-        !decode_state->probability_data) {
-        WARN_ONCE("Wrong parameters for VP8 decoding\n");
-
-        return;
-    }
-
-    slice_param = (VASliceParameterBufferVP8 *)decode_state->slice_params[0]->buffer;
-    slice_data_bo = decode_state->slice_datas[0]->bo;
-
-    gen7_mfd_vp8_decode_init(ctx, decode_state, gen7_mfd_context);
-    intel_batchbuffer_start_atomic_bcs(batch, 0x1000);
-    intel_batchbuffer_emit_mi_flush(batch);
-    gen7_mfd_pipe_mode_select(ctx, decode_state, MFX_FORMAT_VP8, gen7_mfd_context);
-    gen7_mfd_surface_state(ctx, decode_state, MFX_FORMAT_VP8, gen7_mfd_context);
-    gen7_mfd_pipe_buf_addr_state(ctx, decode_state, MFX_FORMAT_VP8, gen7_mfd_context);
-    gen7_mfd_bsp_buf_base_addr_state(ctx, decode_state, MFX_FORMAT_VP8, gen7_mfd_context);
-    gen7_mfd_ind_obj_base_addr_state(ctx, slice_data_bo, MFX_FORMAT_VP8, gen7_mfd_context);
-    gen7_mfd_vp8_pic_state(ctx, decode_state, gen7_mfd_context);
-    gen7_mfd_vp8_bsd_object(ctx, pic_param, slice_param, slice_data_bo, gen7_mfd_context);
-    intel_batchbuffer_end_atomic(batch);
-    intel_batchbuffer_flush(batch);
-}
 static const int vp8_dc_qlookup[128] = {
     4,   5,   6,   7,   8,   9,  10,  10,  11,  12,  13,  14,  15,  16,  17,  17,
     18,  19,  20,  20,  21,  21,  22,  22,  23,  23,  24,  25,  25,  26,  27,  28,
@@ -3434,8 +3405,50 @@ gen7_mfd_vp8_bsd_object(VADriverContextP ctx,
     ADVANCE_BCS_BATCH(batch);
 }
 
-// ===================== ADD NEW ================================
+void
+gen7_mfd_vp8_decode_picture(VADriverContextP ctx,
+                            struct decode_state *decode_state,
+                            struct gen7_mfd_context *gen7_mfd_context)
+{
+    struct intel_batchbuffer *batch = gen7_mfd_context->base.batch;
+    VAPictureParameterBufferVP8 *pic_param;
+    VASliceParameterBufferVP8 *slice_param;
+    dri_bo *slice_data_bo;
 
+    assert(decode_state->pic_param && decode_state->pic_param->buffer);
+    pic_param = (VAPictureParameterBufferVP8 *)decode_state->pic_param->buffer;
+
+    /* one slice per frame */
+    if (decode_state->num_slice_params != 1 ||
+        (!decode_state->slice_params ||
+         !decode_state->slice_params[0] ||
+         (decode_state->slice_params[0]->num_elements != 1 || decode_state->slice_params[0]->buffer == NULL)) ||
+        (!decode_state->slice_datas ||
+         !decode_state->slice_datas[0] ||
+         !decode_state->slice_datas[0]->bo) ||
+        !decode_state->probability_data) {
+        WARN_ONCE("Wrong parameters for VP8 decoding\n");
+
+        return;
+    }
+
+    slice_param = (VASliceParameterBufferVP8 *)decode_state->slice_params[0]->buffer;
+    slice_data_bo = decode_state->slice_datas[0]->bo;
+
+    gen7_mfd_vp8_decode_init(ctx, decode_state, gen7_mfd_context);
+    intel_batchbuffer_start_atomic_bcs(batch, 0x1000);
+    intel_batchbuffer_emit_mi_flush(batch);
+    gen7_mfd_pipe_mode_select(ctx, decode_state, MFX_FORMAT_VP8, gen7_mfd_context);
+    gen7_mfd_surface_state(ctx, decode_state, MFX_FORMAT_VP8, gen7_mfd_context);
+    gen7_mfd_pipe_buf_addr_state(ctx, decode_state, MFX_FORMAT_VP8, gen7_mfd_context);
+    gen7_mfd_bsp_buf_base_addr_state(ctx, decode_state, MFX_FORMAT_VP8, gen7_mfd_context);
+    gen7_mfd_ind_obj_base_addr_state(ctx, slice_data_bo, MFX_FORMAT_VP8, gen7_mfd_context);
+    gen7_mfd_vp8_pic_state(ctx, decode_state, gen7_mfd_context);
+    gen7_mfd_vp8_bsd_object(ctx, pic_param, slice_param, slice_data_bo, gen7_mfd_context);
+    intel_batchbuffer_end_atomic(batch);
+    intel_batchbuffer_flush(batch);
+}
+// ===================== ADD NEW ================================
 static VAStatus
 gen7_mfd_decode_picture(VADriverContextP ctx,
                         VAProfile profile,
@@ -3457,6 +3470,11 @@ gen7_mfd_decode_picture(VADriverContextP ctx,
     gen7_mfd_context->wa_mpeg2_slice_vertical_position = -1;
 
     switch (profile) {
+        case VAProfileMPEG2Simple:
+        case VAProfileMPEG2Main:
+            gen7_mfd_mpeg2_decode_picture(ctx, decode_state, gen7_mfd_context);
+            break;
+
         case VAProfileH264Baseline:
         case VAProfileH264ConstrainedBaseline:
         case VAProfileH264Main:
@@ -3464,11 +3482,6 @@ gen7_mfd_decode_picture(VADriverContextP ctx,
         case VAProfileH264MultiviewHigh:
         case VAProfileH264StereoHigh:
             gen7_mfd_avc_decode_picture(ctx, decode_state, gen7_mfd_context);
-            break;
-            
-        case VAProfileMPEG2Simple:
-        case VAProfileMPEG2Main:
-            gen7_mfd_mpeg2_decode_picture(ctx, decode_state, gen7_mfd_context);
             break;
 
         case VAProfileVC1Simple:
@@ -3485,7 +3498,6 @@ gen7_mfd_decode_picture(VADriverContextP ctx,
             gen7_mfd_vp8_decode_picture(ctx, decode_state, gen7_mfd_context);
             break; 
 
-        /* FIXME: add for other profile */
         default:
             assert(0);
             break;
