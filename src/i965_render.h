@@ -143,11 +143,10 @@ intel_render_put_subpicture(
 );
 
 struct gen7_surface_state;
-
 void
 gen7_render_set_surface_scs(struct gen7_surface_state *ss);
 
-extern bool genx_render_init(VADriverContextP ctx);
+/* extern bool genx_render_init(VADriverContextP ctx); */
 
 struct gen8_surface_state;
 void
